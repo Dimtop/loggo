@@ -1,14 +1,15 @@
 package file
 
 import (
-	"loggo/config"
-	"loggo/log"
-	"loggo/utils"
 	"os"
 	"path"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/Dimtop/loggo/config"
+	"github.com/Dimtop/loggo/log"
+	"github.com/Dimtop/loggo/utils"
 )
 
 type File struct {
