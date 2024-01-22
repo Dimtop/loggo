@@ -15,9 +15,9 @@ type Harvester struct {
 	OnLogsParsedFuncs []func(logs []log.Log)
 }
 
-func InitializeHarvester(configPath string, onLogsParsedFuncs []func(logs []log.Log)) *Harvester {
+func InitializeHarvester(configPath string, interval int, onLogsParsedFuncs []func(logs []log.Log)) *Harvester {
 	h := &Harvester{
-		Ticker:            time.NewTicker(time.Second * 5),
+		Ticker:            time.NewTicker(time.Second * time.Duration(interval)),
 		ConfigPath:        configPath,
 		OnLogsParsedFuncs: onLogsParsedFuncs,
 	}
@@ -32,17 +32,20 @@ func (h *Harvester) Run() {
 		case <-h.Ticker.C:
 
 			cfg := config.ReadConfigFile(h.ConfigPath)
-			var logs []log.Log
-			logsAsStrings := file.ParseFile(cfg.LastUsedFile, cfg.SeekPos)
 
-			for _, logStr := range logsAsStrings {
-				logs = append(logs, log.ParseLogFromString(logStr))
-			}
+			for k, f := range cfg.Files {
 
-			cfg.UpdateConfig(h.ConfigPath, cfg.EmitChangeSeekposMessage(h.ConfigPath, utils.GetFileSize(cfg.LastUsedFile)))
+				var logs []log.Log
+				logsAsStrings := file.ParseFile(k, f.SeekPos)
 
-			for _, function := range h.OnLogsParsedFuncs {
-				function(logs)
+				for _, logStr := range logsAsStrings {
+					logs = append(logs, log.ParseLogFromString(logStr))
+				}
+				cfg.UpdateConfig(h.ConfigPath, cfg.EmitChangeFileSeekposMessage(h.ConfigPath, k, utils.GetFileSize(k)))
+
+				for _, function := range h.OnLogsParsedFuncs {
+					function(logs)
+				}
 			}
 
 		}

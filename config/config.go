@@ -11,13 +11,13 @@ import (
 type Config struct {
 	DirPath      string
 	LastUsedFile string
-	SeekPos      int64
 	Files        map[string]FileConfig
 	MaxSize      int64
 }
 
 type FileConfig struct {
-	Size int64
+	Size    int64
+	SeekPos int64
 }
 type ConfigFileWritesChanMessage struct {
 	Action     CONFIG_UPDATE_ACTION
@@ -45,15 +45,18 @@ func ReadConfigFile(configPath string) Config {
 	return config
 }
 
-func (c *Config) EmitChangeSeekposMessage(configPath string, seekPos int64) ConfigFileWritesChanMessage {
-
+func (c *Config) EmitChangeFileSeekposMessage(configPath string, filePath string, seekPos int64) ConfigFileWritesChanMessage {
 	configData := ReadConfigFile(configPath)
 
-	configData.SeekPos = seekPos
+	configData.Files[filePath] = FileConfig{
+		Size:    configData.Files[filePath].Size,
+		SeekPos: seekPos,
+	}
 
 	return ConfigFileWritesChanMessage{
 		ConfigData: configData,
 		Action:     CHANGE_SEEK_POS,
+		Identifier: filePath,
 	}
 
 }
@@ -120,8 +123,8 @@ func ChangeLastUsedFileMessage(currentConfigData Config, alteredConfigData Confi
 	return currentConfigData
 }
 
-func ChangeSeekPos(currentConfigData Config, alteredConfigData Config) Config {
-	currentConfigData.SeekPos = alteredConfigData.SeekPos
+func ChangeSeekPos(currentConfigData Config, alteredConfigData Config, filePath string) Config {
+	currentConfigData.Files[filePath] = alteredConfigData.Files[filePath]
 	return currentConfigData
 }
 
@@ -147,7 +150,7 @@ func (c *Config) UpdateConfig(configPath string, updateConfigMessage ConfigFileW
 		configData = ChangeLastUsedFileMessage(configData, updateConfigMessage.ConfigData)
 	}
 	if updateConfigMessage.Action == CHANGE_SEEK_POS {
-		configData = ChangeSeekPos(configData, updateConfigMessage.ConfigData)
+		configData = ChangeSeekPos(configData, updateConfigMessage.ConfigData, updateConfigMessage.Identifier)
 	}
 	configStr, err := json.Marshal(configData)
 	if err != nil {
