@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"loggo/harvester"
-	"loggo/log"
+
+	"github.com/Dimtop/loggo/harvester"
+	"github.com/Dimtop/loggo/log"
 )
 
 func main() {

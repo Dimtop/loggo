@@ -1,11 +1,12 @@
 package harvester
 
 import (
-	"loggo/config"
-	"loggo/file"
-	"loggo/log"
-	"loggo/utils"
 	"time"
+
+	"github.com/Dimtop/loggo/config"
+	"github.com/Dimtop/loggo/file"
+	"github.com/Dimtop/loggo/log"
+	"github.com/Dimtop/loggo/utils"
 )
 
 type Harvester struct {

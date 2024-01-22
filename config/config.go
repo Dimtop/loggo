@@ -2,9 +2,10 @@ package config
 
 import (
 	"encoding/json"
-	"loggo/utils"
 	"os"
 	"sync"
+
+	"github.com/Dimtop/loggo/utils"
 )
 
 type Config struct {
